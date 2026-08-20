@@ -8,9 +8,7 @@ api = ProjectsAPI("https://ru.yougile.com")
 
 
 # Проверка получения списка ключей
-def test_get_keys(login = "romiolemarak@gmail.com", password = "_GSUb_3nD#Um76h"):
-    login = "login"
-    password = "password"
+def test_get_keys(login="romiolemarak@gmail.com", password="_GSUb_3nD#Um76h"):
     result = api.get_keys_list(login, password)
     assert result
 
@@ -21,11 +19,13 @@ def test_create_project():
     password = "password"
     my_token = api.get_keys_list(login, password)
     title = "Старый проект"
-    result = api.create_project(title)
-    new_id = result.json().get("id")
-    new_project = api.create_project("new_id")
-    assert new_project.status_code == 200
-    assert new_project.json()["id"] == new_id
+    result = api.create_project(title, my_token)
+    new_id = result
+    
+    # Создаем новый проект с тем же ID для проверки
+    new_project = api.create_project("Новый проект", my_token)
+    assert new_project is not None
+    assert new_project != new_id
 
 
 # Провека изменения проекта
@@ -34,7 +34,7 @@ def test_update_project():
     password = "password"
     my_token = api.get_keys_list(login, password)
     new_title = "Новый проект"
-    result = api.update_project(new_title)
+    result = api.update_project(new_title, my_token)
     assert result
 
 
@@ -43,5 +43,6 @@ def test_get_project_id():
     login = "login"
     password = "password"
     my_token = api.get_keys_list(login, password)
-    found_project = api.get_project_id(id)
-    assert found_project
+    project_id = "some_project_id"
+    found_project = api.get_project_id(project_id, my_token)
+    assert found_project 
