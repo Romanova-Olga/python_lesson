@@ -1,10 +1,54 @@
 import pytest
 import requests
 
-from YouGile_Api import ProjectsAPI
-from YouGile_Api import AuthAPI
+from api_YouGile_class import ProjectsAPI
+from api_YouGile_class import AuthAPI
+from api_YouGile_class import LOGIN, PASSWORD, COMPANY_ID, BASE_URL
+
+def test_auth_success():
+    """Тест успешной авторизации"""
+    auth_api = AuthAPI(BASE_URL)
+    response = auth_api.login(LOGIN, PASSWORD, COMPANY_ID)
+    
+    # Проверка статус-кода
+    assert response.status_code == 201, f"Ожидался статус 201, получен {response.status_code}"
+    
+    # Проверка структуры ответа
+    response_data = response.json()
+    assert "key" in response_data, "Ответ не содержит поле 'key'"
+    assert isinstance(response_data["key"], str), "Ключ должен быть строкой"
+    assert len(response_data["key"]) > 0, "Ключ не должен быть пустым"
+    
+    print(f"✅ Токен получен: {response_data['key'][:20]}...")
+
+
+def test_auth_invalid_password():
+    """Тест авторизации с неверным паролем"""
+    auth_api = AuthAPI(BASE_URL)
+    response = auth_api.login(LOGIN, "wrong_password", COMPANY_ID)
+    
+    # Проверка, что авторизация не удалась
+    assert response.status_code == 401, f"Ожидался статус 401, получен {response.status_code}"
+
+
+def test_auth_invalid_login():
+    """Тест авторизации с неверным логином"""
+    auth_api = AuthAPI(BASE_URL)
+    response = auth_api.login("wrong@email.com", PASSWORD, COMPANY_ID)
+    
+    assert response.status_code == 401, f"Ожидался статус 401, получен {response.status_code}"
+
+
+def test_auth_invalid_company():
+    """Тест авторизации с неверным ID компании"""
+    auth_api = AuthAPI(BASE_URL)
+    response = auth_api.login(LOGIN, PASSWORD, "invalid-company-id")
+    
+    assert response.status_code == 401, f"Ожидался статус 401, получен {response.status_code}"
+
 
 def test_create_project(api_with_token):
+    """Тест создания проекта с проверкой статус-кода"""
     title = "Старый проект"
     
     response = api_with_token.create_project(title)
@@ -26,6 +70,14 @@ def test_create_project(api_with_token):
     assert isinstance(result["users"], list), "users должен быть списком"
     
     print(f"✅ Проект создан с ID: {result['id']}")
+
+
+def test_create_project_without_title(api_with_token):
+    """Тест создания проекта без заголовка (ожидается ошибка)"""
+    response = api_with_token.create_project("")
+    
+    # Проверка, что сервер вернул ошибку
+    assert response.status_code in [400, 422], f"Ожидался статус 400/422, получен {response.status_code}"
 
 
 def test_update_project(api_with_token):
@@ -52,6 +104,15 @@ def test_update_project(api_with_token):
     assert updated_project["title"] == new_title
     
     print(f"✅ Проект обновлен: '{old_title}' → '{new_title}'")
+
+
+def test_update_nonexistent_project(api_with_token):
+    """Тест обновления несуществующего проекта"""
+    fake_id = "00000000-0000-0000-0000-000000000000"
+    response = api_with_token.update_project(fake_id, "Новый заголовок")
+    
+    # Проверка, что сервер вернул ошибку 404
+    assert response.status_code == 404, f"Ожидался статус 404, получен {response.status_code}"
 
 
 def test_get_project_by_id(api_with_token):
@@ -81,3 +142,12 @@ def test_get_project_by_id(api_with_token):
     assert "users" in found_project
     
     print(f"✅ Проект найден: '{found_project['title']}'")
+
+
+def test_get_nonexistent_project(api_with_token):
+    """Тест получения несуществующего проекта"""
+    fake_id = "00000000-0000-0000-0000-000000000000"
+    response = api_with_token.get_project_by_id(fake_id)
+    
+    # Проверка, что сервер вернул ошибку 404
+    assert response.status_code == 404, f"Ожидался статус 404, получен {response.status_code}"
