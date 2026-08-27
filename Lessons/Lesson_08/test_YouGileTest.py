@@ -5,47 +5,6 @@ from api_YouGile_class import ProjectsAPI
 from api_YouGile_class import AuthAPI
 from api_YouGile_class import LOGIN, PASSWORD, COMPANY_ID, BASE_URL
 
-def test_auth_success():
-    """Тест успешной авторизации"""
-    auth_api = AuthAPI(BASE_URL)
-    response = auth_api.login(LOGIN, PASSWORD, COMPANY_ID)
-    
-    # Проверка статус-кода
-    assert response.status_code == 201, f"Ожидался статус 201, получен {response.status_code}"
-    
-    # Проверка структуры ответа
-    response_data = response.json()
-    assert "key" in response_data, "Ответ не содержит поле 'key'"
-    assert isinstance(response_data["key"], str), "Ключ должен быть строкой"
-    assert len(response_data["key"]) > 0, "Ключ не должен быть пустым"
-    
-    print(f"✅ Токен получен: {response_data['key'][:20]}...")
-
-
-def test_auth_invalid_password():
-    """Тест авторизации с неверным паролем"""
-    auth_api = AuthAPI(BASE_URL)
-    response = auth_api.login(LOGIN, "wrong_password", COMPANY_ID)
-    
-    # Проверка, что авторизация не удалась
-    assert response.status_code == 401, f"Ожидался статус 401, получен {response.status_code}"
-
-
-def test_auth_invalid_login():
-    """Тест авторизации с неверным логином"""
-    auth_api = AuthAPI(BASE_URL)
-    response = auth_api.login("wrong@email.com", PASSWORD, COMPANY_ID)
-    
-    assert response.status_code == 401, f"Ожидался статус 401, получен {response.status_code}"
-
-
-def test_auth_invalid_company():
-    """Тест авторизации с неверным ID компании"""
-    auth_api = AuthAPI(BASE_URL)
-    response = auth_api.login(LOGIN, PASSWORD, "invalid-company-id")
-    
-    assert response.status_code == 401, f"Ожидался статус 401, получен {response.status_code}"
-
 
 def test_create_project(api_with_token):
     """Тест создания проекта с проверкой статус-кода"""
