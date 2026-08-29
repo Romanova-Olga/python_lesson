@@ -1,0 +1,275 @@
+# UI-тестирование с Allure
+
+Проект содержит автоматизированные UI-тесты для:
+- Калькулятора с задержкой
+- Интернет-магазина SauceDemo
+
+Тесты написаны с использованием **Selenium WebDriver**, **Pytest** и **Allure** для генерации подробных отчетов.
+
+
+## Требования
+
+Перед запуском убедитесь, что установлены:
+
+- **Python 3.8+**
+- **Google Chrome** / **Mozilla Firefox** (для запуска браузеров)
+- **WebDriver** для вашего браузера (ChromeDriver / GeckoDriver)
+- **Java 8+** (для работы Allure)
+
+
+## Установка
+
+1. Клонируйте репозиторий
+
+```bash
+git clone <url-репозитория>
+cd <название-папки>
+```
+
+2. Установите зависимости
+
+```bash
+pip install -r requirements.txt
+```
+
+requirements.txt должен содержать:
+
+```
+pytest
+selenium
+allure-pytest
+pytest-xdist  # для параллельного запуска (опционально)
+```
+
+3. Установите Allure Command Line
+
+MacOS:
+
+```bash
+brew install allure
+```
+
+Windows (через Chocolatey):
+
+```bash
+choco install allure
+```
+
+Ubuntu / Debian:
+
+```bash
+sudo apt-add-repository ppa:qameta/allure
+sudo apt-get update
+sudo apt-get install allure
+```
+
+Альтернативно:
+
+Скачайте Allure ZIP и добавьте bin в PATH.
+
+---
+
+📁 Структура проекта
+
+```
+project/
+├── pages/
+│   ├── calculator_page.py    # Page Object для калькулятора
+│   └── shop_page.py          # Page Object для SauceDemo
+├── tests/
+│   ├── test_calculator.py    # Тесты калькулятора
+│   └── test_saucedemo.py     # Тесты интернет-магазина
+├── allure-results/           # Папка с результатами (НЕ пушить!)
+├── allure-report/            # Папка с отчетом (НЕ пушить!)
+├── conftest.py               # Фикстуры Pytest
+├── pytest.ini                # Конфигурация Pytest
+├── requirements.txt          # Зависимости
+└── README.md                 # Этот файл
+```
+
+⚠️ Важно: Папки allure-results/ и allure-report/ НЕ пушить в репозиторий. Добавьте их в .gitignore.
+
+---
+
+## Запуск тестов
+
+1. Базовый запуск всех тестов
+
+```bash
+pytest
+```
+
+2. Запуск с генерацией Allure-результатов
+
+```bash
+pytest --alluredir=allure-results
+```
+
+3. Запуск конкретного файла с тестами
+
+```bash
+pytest tests/test_calculator.py --alluredir=allure-results
+```
+
+4. Запуск тестов с определенным тегом
+
+```bash
+pytest -m smoke --alluredir=allure-results
+```
+
+Доступные теги:
+
+· smoke — дымовые тесты
+· regression — регрессионные тесты
+· positive — позитивные сценарии
+· negative — негативные сценарии
+· calculator — тесты калькулятора
+· saucedemo — тесты интернет-магазина
+· checkout — тесты оформления заказа
+· cart — тесты корзины
+· edge — крайние случаи
+
+5. Параллельный запуск (опционально)
+
+```bash
+pytest -n auto --alluredir=allure-results
+```
+
+---
+
+## Просмотр Allure-отчета
+
+После выполнения тестов с параметром --alluredir, выполните:
+
+1. Сгенерировать HTML-отчет
+
+```bash
+allure generate allure-results -o allure-report --clean
+```
+
+· -o allure-report — папка для отчета
+· --clean — очищает папку перед генерацией
+
+2. Открыть отчет в браузере
+
+```bash
+allure open allure-report
+```
+
+3. Альтернативный способ: просмотр без сохранения
+
+```bash
+allure serve allure-results
+```
+
+Эта команда автоматически:
+
+· Генерирует отчет во временную папку
+· Открывает его в браузере
+· Удаляет после закрытия
+
+---
+
+## Дополнительные команды
+
+Очистка результатов
+
+```bash
+rm -rf allure-results/
+rm -rf allure-report/
+```
+
+## Запуск с определенным браузером
+
+```bash
+# Для Chrome
+pytest --browser=chrome --alluredir=allure-results
+
+# Для Firefox
+pytest --browser=firefox --alluredir=allure-results
+```
+
+Запуск с подробным выводом
+
+```bash
+pytest -v --alluredir=allure-results
+```
+
+Запуск без захвата вывода (для отладки)
+
+```bash
+pytest -s --alluredir=allure-results
+```
+
+Запуск только упавших тестов
+
+```bash
+pytest --lf --alluredir=allure-results
+```
+
+Запуск тестов в случайном порядке
+
+```bash
+pytest --random-order --alluredir=allure-results
+```
+
+---
+
+## Настройка в PyCharm
+
+1. Перейдите в Run → Edit Configurations
+2. Добавьте новую конфигурацию pytest
+3. В поле Additional Arguments укажите:
+
+```
+--alluredir=allure-results
+```
+
+4. После запуска откройте терминал и выполните:
+
+```bash
+allure serve allure-results
+```
+
+---
+
+## Возможные проблемы
+
+1. Ошибка "allure: command not found"
+
+Решение: Убедитесь, что Allure установлен и добавлен в PATH.
+
+```bash
+# Проверка установки
+allure --version
+```
+
+2. Ошибка "WebDriver not found"
+
+Решение: Установите драйвер для вашего браузера:
+
+```bash
+# ChromeDriver
+pip install webdriver-manager
+```
+
+Или скачайте вручную с официальных сайтов.
+
+3. Тесты падают с таймаутом
+
+Решение: Увеличьте таймауты в тестах или проверьте интернет-соединение.
+
+---
+
+## Примечания
+
+· Папки allure-results/ и allure-report/ НЕ пушить в репозиторий.
+· Добавьте их в .gitignore:
+
+```gitignore
+# Allure results and reports
+allure-results/
+allure-report/
+```
+
+· Если вы используете CI/CD (например, GitHub Actions), можно настроить автоматическую публикацию Allure-отчета как артефакта.
