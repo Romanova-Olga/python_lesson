@@ -1,5 +1,10 @@
+"""
+Тесты для интернет-магазина SauceDemo с использованием Allure.
+"""
+
 import pytest
 from selenium import webdriver
+from selenium.webdriver.remote.webdriver import WebDriver
 from shop_page import LoginPage, InventoryPage, CartPage, CheckoutPage
 import allure
 
@@ -9,9 +14,11 @@ def driver():
     """
     Фикстура для создания и закрытия драйвера Firefox.
 
-    :return: WebDriver — экземпляр драйвера Firefox.
+    Yields:
+        WebDriver: Экземпляр драйвера Firefox.
     """
-    driver = webdriver.Firefox()
+    driver: WebDriver = webdriver.Firefox()
+    driver.maximize_window()
     yield driver
     driver.quit()
 
@@ -36,16 +43,20 @@ def driver():
 @allure.severity(allure.severity_level.CRITICAL)
 @allure.tag("smoke", "saucedemo", "checkout", "positive")
 @allure.link("https://www.saucedemo.com/", name="SauceDemo Website")
-def test_saucedemo_checkout_total(driver):
+def test_saucedemo_checkout_total(driver: WebDriver) -> None:
     """
     Тест проверяет итоговую стоимость заказа в интернет-магазине.
 
-    :param driver: WebDriver — экземпляр драйвера от фикстуры.
-    :return: None
+    Args:
+        driver: WebDriver — экземпляр драйвера от фикстуры.
+
+    Returns:
+        None
     """
     with allure.step("1. Открытие сайта и авторизация"):
-        login_page = LoginPage(driver).open()
-        inventory_page = login_page.login("standard_user", "secret_sauce")
+        login_page: LoginPage = LoginPage(driver).open()
+        inventory_page: InventoryPage = login_page.login(
+            "standard_user", "secret_sauce")
         allure.attach(
             body="Авторизация выполнена как standard_user",
             name="Авторизация",
@@ -63,8 +74,8 @@ def test_saucedemo_checkout_total(driver):
         )
 
     with allure.step("3. Переход в корзину и нажатие Checkout"):
-        cart_page = inventory_page.go_to_cart()
-        checkout_page = cart_page.click_checkout()
+        cart_page: CartPage = inventory_page.go_to_cart()
+        checkout_page: CheckoutPage = cart_page.click_checkout()
 
     with allure.step("4. Заполнение формы покупателя"):
         checkout_page.fill_form("Иван", "Петров", "123456")
@@ -75,7 +86,7 @@ def test_saucedemo_checkout_total(driver):
         )
 
     with allure.step("5. Чтение итоговой стоимости"):
-        total = checkout_page.get_total()
+        total: float = checkout_page.get_total()
         allure.attach(
             body=f"Итоговая сумма: ${total}",
             name="Результат",
@@ -83,10 +94,12 @@ def test_saucedemo_checkout_total(driver):
         )
 
     with allure.step("6. Проверка итоговой суммы (ожидается $58.29)"):
-        expected_total = 58.29
-        assert total == expected_total, f"Ожидалось {expected_total}, получено {total}"
+        expected_total: float = 58.29
+        assert total == expected_total, (
+            f"Ожидалось {expected_total}, получено {total}"
+        )
         allure.attach(
-            body=f"✅ Проверка пройдена: {total} == {expected_total}",
+            body=f"Проверка пройдена: {total} == {expected_total}",
             name="Результат проверки",
             attachment_type=allure.attachment_type.TEXT
         )

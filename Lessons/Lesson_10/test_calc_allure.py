@@ -38,7 +38,7 @@ def test_show_calculator_operation(driver):
     Тест проверяет корректность выполнения операции сложения
     с использованием механизма задержки.
 
-    :param driver: WebDriver — экземпляр драйвера от фикстуры.
+    :param driver: WebDriver – экземпляр драйвера от фикстуры.
     :return: None
     """
     # Создаём объект страницы
